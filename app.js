@@ -1,36 +1,88 @@
-var express = require("express");
-var app = express();
-var bodyParser = require("body-parser");
+var express = require("express"),
+ 	app = express(),
+	bodyParser = require("body-parser"),
+	mongoose = require("mongoose")
 
+mongoose.connect("mongodb://localhost/yelp_project");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
-var campGrounds = [
-		{name: "hoho", image: "https://i.insider.com/5cd46fae93a15201580b7535?width=2500&format=jpeg&auto=webp"},
-		{name: "lala", image: ""}
-	]
+//schema setup
+var campGroundSchema = new mongoose.Schema({
+	name: String,
+	image: String,
+	description: String
+});
+
+var CampGround = mongoose.model("CampGround", campGroundSchema);
+
+// CampGround.create(
+// 	{	
+// 		name: "lala", 
+// 		image: "https://cdngeneral.rentcafe.com/dmslivecafe/3/455120/Main-Genesee-1(2).jpg?quality=85&scale=both",
+// 		description: "kunkun"
+// 	}, function(err, campGround) {
+// 		if (err) {
+// 			console.log(err);
+// 		} else {
+// 			console.log("new one get");
+// 			console.log(campGround);
+// 		}
+// });
 
 app.get("/", function(req, res) {
 	res.render("landing");
 });
 
+// var campGrounds = [
+// 		{name: "hoho", image: "https://assets.bwbx.io/images/users/iqjWHBFdfxIU/ixPdSl7.SV8A/v1/1200x-1.jpg"},
+// 		{name: "lala", image: "https://cdngeneral.rentcafe.com/dmslivecafe/3/455120/Main-Genesee-1(2).jpg?quality=85&scale=both"},
+// 		{name: "lala", image: "https://nlrmanagement.com/wp-content/uploads/Jefferson-Village-Senior-Apartments-NLR-Management-e1571694713743.jpg"}
+// 	]
+
 app.get("/campGrounds", function(req, res) {
-	
-	res.render("campGrounds", {campGrounds: campGrounds});
+	CampGround.find({}, function(err, allCampGrounds) {
+					if (err){
+						console.log(err);
+					} else {
+						res.render("index", {campGrounds: allCampGrounds})
+					}
+	});		
+					
+	//res.render("campGrounds", {campGrounds: campGrounds});
 });
 
+		
 app.post("/campGrounds", function(req, res) {
 	//get data from forma
 	var name = req.body.name
 	var image = req.body.image
-	var newCampGround = {name: name, image: image}
-	//add into array
-	campGrounds.push(newCampGround);
-	//redirect to campGrounds page
-	res.redirect("/campGrounds");
+	var desc = req.body.description
+	var newCampGround = {name: name, image: image, description: desc}
+	
+	//create new campGrounds and save to db
+	CampGround.create(newCampGround, function(err, newCreated){
+		if (err){
+			console.log(err);
+		} else {//redirect to campGrounds page
+			res.redirect("/campGrounds");
+		}
+	})
+	
+	
 });
 app.get("/campGrounds/new", function(req, res) {
 	res.render("new.ejs")
+});
+app.get("/campGrounds/:id", function(req, res) {
+	//find the campground with provided provided
+	CampGround.findById(req.params.id, function(err, foundCampground) {
+		if (err){
+			console.log(err);
+		} else {
+			res.render("show",{campground : foundCampground})	;	
+		}
+	});
 });
 
 app.listen(3000, function() {
