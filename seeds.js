@@ -30,16 +30,16 @@ async function seedDB(){
         for(const seed of seeds) {
             let campground = await Campground.create(seed);
             console.log('Campground created');
-            let comment = await Comment.create(
-                {
-                    text: 'This place is great, but I wish there was internet',
-                    author: 'Homer'
-                }
-            )
-            console.log('Comment created');
-            campground.comments.push(comment);
-            campground.save();
-            console.log('Comment added to campground');
+            // let comment = await Comment.create(
+            //     {
+            //         text: 'This place is great, but I wish there was internet',
+            //         author: 'Homer'
+            //     }
+            // )
+            // console.log('Comment created');
+            // campground.comments.push(comment);
+            // campground.save();
+            // console.log('Comment added to campground');
         }
     } catch(err) {
         console.log(err);
